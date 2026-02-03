@@ -1,68 +1,37 @@
 import 'package:flutter/material.dart';
+import 'screens/login_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/settings_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const CodeXecuteApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CodeXecuteApp extends StatelessWidget {
+  const CodeXecuteApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'CodeXecute',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'CodeXecute'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'CodeXecute',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        primarySwatch: Colors.indigo,
+        primaryColor: const Color(0xFF5C6BC0), // Indigo 400
+        scaffoldBackgroundColor: Colors.grey[50], // Light background
+        fontFamily: 'Roboto', // Default Material font, can be changed
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF5C6BC0),
+          brightness: Brightness.light,
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LoginScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
+        '/settings': (context) => const SettingsScreen(),
+      },
     );
   }
 }
