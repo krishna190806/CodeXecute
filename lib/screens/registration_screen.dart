@@ -1,80 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'forgot_password_screen.dart';
+import 'package:flutter/foundation.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegistrationScreen> createState() => _RegistrationScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
   bool _isButtonEnabled = false;
 
   @override
   void initState() {
     super.initState();
+    _nameController.addListener(_validateInputs);
     _emailController.addListener(_validateInputs);
     _passwordController.addListener(_validateInputs);
+    _confirmPasswordController.addListener(_validateInputs);
   }
 
   void _validateInputs() {
     setState(() {
-      _isButtonEnabled = _emailController.text.isNotEmpty && _passwordController.text.length >= 6;
+      _isButtonEnabled = _nameController.text.isNotEmpty &&
+          _emailController.text.isNotEmpty &&
+          _passwordController.text.length >= 6 &&
+          _confirmPasswordController.text == _passwordController.text;
     });
   }
 
-  Future<void> _login() async {
+  Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
-      
+
       try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-        // Navigation is handled by StreamBuilder in main.dart
-        // But we can pop if pushed (though usually replaced)
+
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Account created successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Navigate back to login or let StreamBuilder handle it
+          Navigator.pop(context);
+        }
       } on FirebaseAuthException catch (e) {
-        String message = 'Login failed: ${e.message}';
-        if (e.code == 'user-not-found') {
-          message = 'No user found for that email.';
-        } else if (e.code == 'wrong-password') {
-          message = 'Invalid password.';
-        } else if (e.code == 'invalid-email') {
-          message = 'The email address is badly formatted.';
-        } else if (e.code == 'user-disabled') {
-          message = 'This user has been disabled.';
-        } else if (e.code == 'user-disabled') {
-          message = 'This user has been disabled.';
-        } else if (e.code == 'invalid-credential') {
-          message = 'Invalid credentials. Please check your info.';
+        debugPrint("REGISTER ERROR CODE: ${e.code}");
+        debugPrint("REGISTER ERROR MSG : ${e.message}");
+        
+        String message = 'Registration failed: ${e.message}';
+        if (e.code == 'weak-password') {
+          message = 'The password provided is too weak.';
+        } else if (e.code == 'email-already-in-use') {
+          message = 'The account already exists for that email.';
         } else if (e.code == 'operation-not-allowed') {
           message = 'Email/Password sign-in is not enabled in Firebase Console.';
         } else if (e.code == 'unauthorized-domain') {
           message = 'This domain is not authorized for OAuth operations.';
+        } else if (e.code == 'invalid-api-key') {
+          message = 'Invalid API key. Check firebase_options.dart configuration.';
         }
-        if (mounted) {
+         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text(message),
-                backgroundColor: Colors.red,
+              content: Text("${e.code}: $message"),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
             ),
           );
         }
       } catch (e) {
-         if (mounted) {
+        debugPrint("REGISTER UNKNOWN ERROR: $e");
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
+            SnackBar(
+              content: Text('Registration failed: $e'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       } finally {
@@ -89,47 +108,79 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Create Account'),
+         backgroundColor: Colors.transparent,
+         elevation: 0,
+         leading: IconButton(
+           icon: const Icon(Icons.arrow_back, color: Colors.black87),
+           onPressed: () => Navigator.of(context).pop(),
+         ),
+         titleTextStyle: TextStyle(
+            color: Colors.black87,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+         ),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Logo or Icon
-                Icon(
-                  Icons.code,
-                  size: 80,
-                  color: Theme.of(context).primaryColor,
-                ),
-                const SizedBox(height: 16),
                 Text(
-                  'Welcome Back',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  'Join CodeXecute',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to your account',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  'Start your coding journey today',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey[600],
                       ),
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 32),
+                
+                 // Full Name Field
+                TextFormField(
+                  controller: _nameController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    labelText: 'Full Name',
+                    prefixIcon: const Icon(Icons.person_outline),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your full name';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
 
                 // Email Field
                 TextFormField(
@@ -141,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    enabledBorder: OutlineInputBorder(
+                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(color: Colors.grey.shade300),
                     ),
@@ -162,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
-                  decoration: InputDecoration(
+                   decoration: InputDecoration(
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
@@ -180,14 +231,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    enabledBorder: OutlineInputBorder(
+                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(color: Colors.grey.shade300),
                     ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
+                      return 'Please enter a password';
                     }
                     if (value.length < 6) {
                       return 'Password must be at least 6 characters';
@@ -195,28 +246,51 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                
-                // Forgot Password (Optional)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ForgotPasswordScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text('Forgot Password?'),
-                  ),
-                ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
-                // Login Button
+                // Confirm Password Field
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: !_isConfirmPasswordVisible,
+                   decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                     suffixIcon: IconButton(
+                      icon: Icon(
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                        });
+                      },
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                     enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please confirm your password';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 32),
+
+                // Register Button
                 ElevatedButton(
-                  onPressed: (_isButtonEnabled && !_isLoading) ? _login : null,
-                  style: ElevatedButton.styleFrom(
+                  onPressed: (_isButtonEnabled && !_isLoading) ? _register : null,
+                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: Colors.grey.shade300,
@@ -236,29 +310,28 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         )
                       : const Text(
-                          'Login',
+                          'Create Account',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                 ),
-                 const SizedBox(height: 24),
-
-                // Create Account Link
-                Row(
+                const SizedBox(height: 16),
+                
+                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't have an account? ",
+                      "Already have an account? ",
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     GestureDetector(
                       onTap: () {
-                         Navigator.pushNamed(context, '/register');
+                         Navigator.pop(context);
                       },
                       child: Text(
-                        'Create Account',
+                        'Login',
                         style: TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,

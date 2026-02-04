@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -23,6 +24,14 @@ class DashboardScreen extends StatelessWidget {
             icon: const Icon(Icons.notifications_outlined, color: Colors.black54),
             onPressed: () {},
           ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black54),
+            tooltip: 'Logout',
+            onPressed: () async {
+              // Logout: StreamBuilder in main.dart will auto-redirect to Login
+              await FirebaseAuth.instance.signOut();
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: GestureDetector(
@@ -45,7 +54,7 @@ class DashboardScreen extends StatelessWidget {
           children: [
             // Greeting Section
             Text(
-              'Hello, Developer!',
+              'Welcome, User!',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
