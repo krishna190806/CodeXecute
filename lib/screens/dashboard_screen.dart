@@ -86,10 +86,12 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   _buildFeatureCard(
                     context,
-                    title: 'Saved Codes',
-                    icon: Icons.save_outlined,
-                    color: Colors.orangeAccent,
-                    onTap: () {},
+                    title: 'Notes',
+                    icon: Icons.note_outlined,
+                    color: Colors.green,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/notes');
+                    },
                   ),
                   _buildFeatureCard(
                     context,
