@@ -6,6 +6,9 @@ import 'screens/dashboard_screen.dart';
 import 'screens/registration_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/notes_screen.dart';
+import 'screens/tasks_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/add_edit_screen.dart';
 import 'firebase_options.dart'; // Import the new options file
 
 void main() async {
@@ -66,6 +69,9 @@ class CodeXecuteApp extends StatelessWidget {
         '/register': (context) => const RegistrationScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/notes': (context) => const NotesScreen(),
+        '/tasks': (context) => const TasksScreen(),
+        '/profile': (context) => const ProfileScreen(),
+        '/add_edit_task': (context) => const AddEditScreen(isTask: true),
       },
     );
   }

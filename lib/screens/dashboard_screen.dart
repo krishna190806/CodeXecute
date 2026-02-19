@@ -24,19 +24,11 @@ class DashboardScreen extends StatelessWidget {
             icon: const Icon(Icons.notifications_outlined, color: Colors.black54),
             onPressed: () {},
           ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black54),
-            tooltip: 'Logout',
-            onPressed: () async {
-              // Logout: StreamBuilder in main.dart will auto-redirect to Login
-              await FirebaseAuth.instance.signOut();
-            },
-          ),
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, '/settings');
+                 Navigator.pushNamed(context, '/profile');
               },
               child: CircleAvatar(
                 backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
@@ -62,7 +54,7 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'What would you like to build today?',
+              'Manage your work efficiently.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -79,26 +71,30 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   _buildFeatureCard(
                     context,
-                    title: 'New Code',
-                    icon: Icons.add_circle_outline,
-                    color: Colors.blueAccent,
-                    onTap: () {},
-                  ),
-                  _buildFeatureCard(
-                    context,
                     title: 'Notes',
                     icon: Icons.note_outlined,
-                    color: Colors.green,
+                    color: Colors.orange,
                     onTap: () {
                       Navigator.pushNamed(context, '/notes');
                     },
                   ),
                   _buildFeatureCard(
                     context,
-                    title: 'Playground',
-                    icon: Icons.code,
-                    color: Colors.purpleAccent,
-                    onTap: () {},
+                    title: 'Tasks',
+                    icon: Icons.check_circle_outline,
+                    color: Colors.green,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/tasks');
+                    },
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Profile',
+                    icon: Icons.person_outline,
+                    color: Colors.blueAccent,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/profile');
+                    },
                   ),
                   _buildFeatureCard(
                     context,
@@ -116,10 +112,16 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () {
+          // Default to adding a task or show choice. For simplcity, let's go to Add Task
+          Navigator.pushNamed(context, '/add_edit_task'); 
+          // Note: We need to ensure routes are set up for this or use MaterialPageRoute
+          // Since named routes are used above, let's stick to that if possible, or push directly.
+          // Using pushNamed for consistency, but need to register it in main.dart
+        },
         backgroundColor: Theme.of(context).primaryColor,
-        icon: const Icon(Icons.play_arrow),
-        label: const Text('Quick Run'),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Task'),
       ),
     );
   }

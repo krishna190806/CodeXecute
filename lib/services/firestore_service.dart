@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _notesCollection = 'notes';
+  final String _tasksCollection = 'tasks';
+
+  // --- NOTES OPERATIONS ---
 
   // CREATE - Add a new note
   Future<void> addNote(String title, String desc) async {
@@ -63,6 +66,55 @@ class FirestoreService {
       await _firestore.collection(_notesCollection).doc(id).delete();
     } catch (e) {
       print("Error deleting note: $e");
+      rethrow;
+    }
+  }
+
+  // --- TASKS OPERATIONS ---
+
+  // CREATE - Add a new task
+  Future<void> addTask(String title, String desc) async {
+    try {
+      await _firestore.collection(_tasksCollection).add({
+        'title': title,
+        'description': desc,
+        'isCompleted': false,
+        'date': DateTime.now().toString(),
+      });
+    } catch (e) {
+      print("Error adding task: $e");
+      rethrow;
+    }
+  }
+
+  // READ - Get all tasks as a stream
+  Stream<QuerySnapshot> getTasksStream() {
+    return _firestore
+        .collection(_tasksCollection)
+        .orderBy('date', descending: true)
+        .snapshots();
+  }
+
+  // UPDATE - Update a task
+  Future<void> updateTask(String id, String title, String desc, bool isCompleted) async {
+    try {
+      await _firestore.collection(_tasksCollection).doc(id).update({
+        'title': title,
+        'description': desc,
+        'isCompleted': isCompleted,
+      });
+    } catch (e) {
+      print("Error updating task: $e");
+      rethrow;
+    }
+  }
+
+  // DELETE - Delete a task
+  Future<void> deleteTask(String id) async {
+    try {
+      await _firestore.collection(_tasksCollection).doc(id).delete();
+    } catch (e) {
+      print("Error deleting task: $e");
       rethrow;
     }
   }
