@@ -1,53 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart' as auth_prov;
+import '../providers/task_provider.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50], // Light background
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: Text(
-          'CodeXecute',
-          style: TextStyle(
-            color: Theme.of(context).primaryColor,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.black54),
-            onPressed: () {},
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: GestureDetector(
-              onTap: () {
-                 Navigator.pushNamed(context, '/profile');
-              },
-              child: CircleAvatar(
-                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                radius: 16,
-                child: const Icon(Icons.person, size: 20, color: Colors.black54),
+    return Consumer2<auth_prov.AuthProvider, TaskProvider>(
+      builder: (context, authProvider, taskProvider, child) {
+        return Scaffold(
+          backgroundColor: Colors.grey[50], // Light background
+          appBar: AppBar(
+            elevation: 0,
+            backgroundColor: Colors.white,
+            title: Text(
+              'CodeXecute',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
               ),
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, color: Colors.black54),
+                onPressed: () {},
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: GestureDetector(
+                  onTap: () {
+                     Navigator.pushNamed(context, '/profile');
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                    radius: 16,
+                    child: const Icon(Icons.person, size: 20, color: Colors.black54),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Greeting Section
-            Text(
-              'Welcome, User!',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          // Add Navigation Drawer
+          drawer: _buildNavigationDrawer(context, authProvider),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Greeting Section with real user name
+                Text(
+                  'Welcome, ${authProvider.userDisplayName}!',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
@@ -124,6 +131,8 @@ class DashboardScreen extends StatelessWidget {
         label: const Text('Add Task'),
       ),
     );
+      },
+    );
   }
 
   Widget _buildFeatureCard(
@@ -177,5 +186,178 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Build Navigation Drawer with proper logout functionality
+  Widget _buildNavigationDrawer(BuildContext context, auth_prov.AuthProvider authProvider) {
+    return Drawer(
+      child: Column(
+        children: [
+          // Drawer Header with user info
+          UserAccountsDrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+            ),
+            accountName: Text(
+              authProvider.userDisplayName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            accountEmail: Text(
+              authProvider.currentUser?.email ?? '',
+              style: const TextStyle(fontSize: 14),
+            ),
+            currentAccountPicture: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Icon(
+                Icons.person,
+                size: 40,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ),
+          
+          // Navigation Items
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.dashboard_outlined,
+                  title: 'Dashboard',
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.task_alt_outlined,
+                  title: 'Tasks',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/tasks');
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.note_outlined,
+                  title: 'Notes',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/notes');
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.person_outline,
+                  title: 'Profile',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/profile');
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.settings_outlined,
+                  title: 'Settings',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/settings');
+                  },
+                ),
+                const Divider(),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.logout,
+                  title: 'Logout',
+                  textColor: Colors.red,
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _handleLogout(context, authProvider);
+                  },
+                ),
+              ],
+            ),
+          ),
+          
+          // App version info
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'CodeXecute v1.0.0',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build individual drawer items
+  Widget _buildDrawerItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? textColor,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: textColor),
+      title: Text(
+        title,
+        style: TextStyle(color: textColor),
+      ),
+      onTap: onTap,
+      dense: true,
+    );
+  }
+
+  /// Handle logout with proper navigation 
+  Future<void> _handleLogout(BuildContext context, auth_prov.AuthProvider authProvider) async {
+    try {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      );
+
+      await authProvider.logout();
+      
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context).pop();
+      
+      // Navigate to login and clear stack - prevent back navigation to dashboard
+      if (context.mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (Route<dynamic> route) => false,
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context).pop();
+      
+      // Show error
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Logout failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

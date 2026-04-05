@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart' as auth_prov;
 import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -38,43 +40,27 @@ class _LoginScreenState extends State<LoginScreen> {
       });
       
       try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
+        final authProvider = Provider.of<auth_prov.AuthProvider>(context, listen: false);
+        bool success = await authProvider.login(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
         );
-        // Navigation is handled by StreamBuilder in main.dart
-        // But we can pop if pushed (though usually replaced)
-      } on FirebaseAuthException catch (e) {
-        String message = 'Login failed: ${e.message}';
-        if (e.code == 'user-not-found') {
-          message = 'No user found for that email.';
-        } else if (e.code == 'wrong-password') {
-          message = 'Invalid password.';
-        } else if (e.code == 'invalid-email') {
-          message = 'The email address is badly formatted.';
-        } else if (e.code == 'user-disabled') {
-          message = 'This user has been disabled.';
-        } else if (e.code == 'user-disabled') {
-          message = 'This user has been disabled.';
-        } else if (e.code == 'invalid-credential') {
-          message = 'Invalid credentials. Please check your info.';
-        } else if (e.code == 'operation-not-allowed') {
-          message = 'Email/Password sign-in is not enabled in Firebase Console.';
-        } else if (e.code == 'unauthorized-domain') {
-          message = 'This domain is not authorized for OAuth operations.';
+        
+        if (success && mounted) {
+          // Navigation is handled automatically by Provider in main.dart
+          // But we can also navigate explicitly with pushReplacement to prevent back navigation
+          Navigator.pushReplacementNamed(context, '/dashboard');
         }
+      } catch (e) {
+        // Handle authentication errors
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text(message),
-                backgroundColor: Colors.red,
+              content: Text(e.toString()),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
             ),
-          );
-        }
-      } catch (e) {
-         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
           );
         }
       } finally {
@@ -118,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: Colors.white,
                       ),
                 ),
                 const SizedBox(height: 8),
@@ -126,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   'Sign in to your account',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
+                        color: Colors.grey[400],
                       ),
                 ),
                 const SizedBox(height: 48),
@@ -135,15 +121,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email_outlined),
+                    labelStyle: TextStyle(color: Colors.grey[400]),
+                    prefixIcon: Icon(Icons.email_outlined, color: Colors.grey[400]),
+                    filled: true,
+                    fillColor: const Color(0xFF1E1E24),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -162,14 +157,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    labelStyle: TextStyle(color: Colors.grey[400]),
+                    prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[400]),
+                    filled: true,
+                    fillColor: const Color(0xFF1E1E24),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isPasswordVisible
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
+                        color: Colors.grey[400],
                       ),
                       onPressed: () {
                         setState(() {
@@ -178,11 +178,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -219,12 +224,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledBackgroundColor: Colors.grey.shade800,
+                    disabledForegroundColor: Colors.grey.shade500,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    elevation: 2,
+                    elevation: 0,
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -251,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: Colors.grey[400]),
                     ),
                     GestureDetector(
                       onTap: () {

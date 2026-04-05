@@ -15,15 +15,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Light background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'Settings',
-          style: TextStyle(color: Colors.black87),
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -49,13 +49,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Card(
-                    elevation: 1,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                    color: const Color(0xFF1E1E24),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.white.withOpacity(0.05)),
+                    ),
                     child: Column(
                       children: [
                         SwitchListTile(
-                          secondary: const Icon(Icons.dark_mode_outlined),
-                          title: const Text('Dark Mode'),
+                          secondary: const Icon(Icons.dark_mode_outlined, color: Colors.white70),
+                          title: const Text('Dark Mode', style: TextStyle(color: Colors.white)),
                           value: _darkMode,
                           onChanged: (bool value) {
                             setState(() {
@@ -63,7 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             });
                           },
                         ),
-                        const Divider(height: 1),
+                        const Divider(height: 1, color: Colors.white10),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                           child: Column(
@@ -72,8 +76,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('Font Size'),
-                                  Text('${_fontSize.round()} px', style: TextStyle(color: Colors.grey[600])),
+                                  const Text('Font Size', style: TextStyle(color: Colors.white)),
+                                  Text('${_fontSize.round()} px', style: TextStyle(color: Colors.grey[400])),
                                 ],
                               ),
                               Slider(
@@ -108,11 +112,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Card(
-                    elevation: 1,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                    color: const Color(0xFF1E1E24),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.white.withOpacity(0.05)),
+                    ),
                     child: SwitchListTile(
-                      secondary: const Icon(Icons.notifications_active_outlined),
-                      title: const Text('Push Notifications'),
+                      secondary: const Icon(Icons.notifications_active_outlined, color: Colors.white70),
+                      title: const Text('Push Notifications', style: TextStyle(color: Colors.white)),
                       value: _notifications,
                       onChanged: (bool value) {
                         setState(() {
@@ -133,7 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildProfileHeader(BuildContext context) {
     return Container(
         width: double.infinity,
-        color: Colors.white,
+        color: Colors.transparent,
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Column(
           children: [
@@ -143,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Main Avatar
                 CircleAvatar(
                   radius: 50,
-                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
                   child: Icon(
                     Icons.person,
                     size: 60,
@@ -154,13 +162,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: Color(0xFF0F0F13), // Matches scaffold background
                     shape: BoxShape.circle,
                   ),
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.greenAccent[700],
+                      color: Theme.of(context).primaryColor,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -175,11 +183,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 16),
             const Text(
               'Student Developer',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
             ),
-            const Text(
+            Text(
               'student@university.edu',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: Colors.grey[400]),
             ),
           ],
         ),

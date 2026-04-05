@@ -104,8 +104,8 @@ class _AddEditScreenState extends State<AddEditScreen> {
       appBar: AppBar(
         title: Text(widget.id == null ? 'Add $type' : 'Edit $type'),
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -116,10 +116,16 @@ class _AddEditScreenState extends State<AddEditScreen> {
             children: [
               TextFormField(
                 controller: _titleController,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   labelText: 'Title',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: const Icon(Icons.title),
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  filled: true,
+                  fillColor: const Color(0xFF1E1E24),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.white.withOpacity(0.05))),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2)),
+                  prefixIcon: Icon(Icons.title, color: Colors.grey[400]),
                 ),
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Please enter a title' : null,
@@ -127,10 +133,16 @@ class _AddEditScreenState extends State<AddEditScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descController,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  prefixIcon: const Icon(Icons.description_outlined),
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  filled: true,
+                  fillColor: const Color(0xFF1E1E24),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.white.withOpacity(0.05))),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2)),
+                  prefixIcon: Icon(Icons.description_outlined, color: Colors.grey[400]),
                   alignLabelWithHint: true,
                 ),
                 maxLines: 5,
@@ -138,12 +150,13 @@ class _AddEditScreenState extends State<AddEditScreen> {
               const SizedBox(height: 16),
               if (widget.isTask) ...[
                 SwitchListTile(
-                  title: const Text('Completed'),
+                  title: const Text('Completed', style: TextStyle(color: Colors.white)),
                   value: _status,
                   onChanged: (val) => setState(() => _status = val),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.shade300)),
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.white.withOpacity(0.05))),
+                  tileColor: const Color(0xFF1E1E24),
                 ),
                 const SizedBox(height: 24),
               ],
@@ -151,14 +164,17 @@ class _AddEditScreenState extends State<AddEditScreen> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _save,
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
+                  elevation: 0,
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Save', style: TextStyle(fontSize: 16)),
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

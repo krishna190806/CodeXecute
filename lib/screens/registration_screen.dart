@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart' as auth_prov;
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -46,53 +47,35 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       });
 
       try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
+        final authProvider = Provider.of<auth_prov.AuthProvider>(context, listen: false);
+        bool success = await authProvider.register(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+          _nameController.text.trim(),
         );
 
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Account created successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          // Navigate back to login or let StreamBuilder handle it
-          Navigator.pop(context);
-        }
-      } on FirebaseAuthException catch (e) {
-        debugPrint("REGISTER ERROR CODE: ${e.code}");
-        debugPrint("REGISTER ERROR MSG : ${e.message}");
-        
-        String message = 'Registration failed: ${e.message}';
-        if (e.code == 'weak-password') {
-          message = 'The password provided is too weak.';
-        } else if (e.code == 'email-already-in-use') {
-          message = 'The account already exists for that email.';
-        } else if (e.code == 'operation-not-allowed') {
-          message = 'Email/Password sign-in is not enabled in Firebase Console.';
-        } else if (e.code == 'unauthorized-domain') {
-          message = 'This domain is not authorized for OAuth operations.';
-        } else if (e.code == 'invalid-api-key') {
-          message = 'Invalid API key. Check firebase_options.dart configuration.';
-        }
-         if (mounted) {
+        if (success && mounted) {
+          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("${e.code}: $message"),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
+            const SnackBar(
+              content: Text('Registration successful! Redirecting...'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
             ),
           );
+          
+          // Navigate to dashboard after successful registration
+          Navigator.pushReplacementNamed(context, '/dashboard');
         }
       } catch (e) {
-        debugPrint("REGISTER UNKNOWN ERROR: $e");
+        // Handle registration errors
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Registration failed: $e'),
+              content: Text(e.toString()),
               backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -123,11 +106,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
          backgroundColor: Colors.transparent,
          elevation: 0,
          leading: IconButton(
-           icon: const Icon(Icons.arrow_back, color: Colors.black87),
+           icon: const Icon(Icons.arrow_back, color: Colors.white),
            onPressed: () => Navigator.of(context).pop(),
          ),
-         titleTextStyle: TextStyle(
-            color: Colors.black87,
+         titleTextStyle: const TextStyle(
+            color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
          ),
@@ -140,11 +123,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Icon(
+                  Icons.code,
+                  size: 80,
+                  color: Theme.of(context).primaryColor,
+                ),
+                const SizedBox(height: 16),
                 Text(
                   'Join CodeXecute',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: Colors.white,
                       ),
                   textAlign: TextAlign.center,
                 ),
@@ -152,7 +141,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 Text(
                   'Start your coding journey today',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
+                        color: Colors.grey[400],
                       ),
                   textAlign: TextAlign.center,
                 ),
@@ -162,15 +151,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 TextFormField(
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Full Name',
-                    prefixIcon: const Icon(Icons.person_outline),
+                    labelStyle: TextStyle(color: Colors.grey[400]),
+                    prefixIcon: Icon(Icons.person_outline, color: Colors.grey[400]),
+                    filled: true,
+                    fillColor: const Color(0xFF1E1E24),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -186,15 +184,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email_outlined),
+                    labelStyle: TextStyle(color: Colors.grey[400]),
+                    prefixIcon: Icon(Icons.email_outlined, color: Colors.grey[400]),
+                    filled: true,
+                    fillColor: const Color(0xFF1E1E24),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
                     ),
                      enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -213,14 +220,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
+                  style: const TextStyle(color: Colors.white),
                    decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    labelStyle: TextStyle(color: Colors.grey[400]),
+                    prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[400]),
+                    filled: true,
+                    fillColor: const Color(0xFF1E1E24),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isPasswordVisible
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
+                        color: Colors.grey[400],
                       ),
                       onPressed: () {
                         setState(() {
@@ -229,11 +241,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       },
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
                     ),
                      enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -252,14 +269,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: !_isConfirmPasswordVisible,
+                  style: const TextStyle(color: Colors.white),
                    decoration: InputDecoration(
                     labelText: 'Confirm Password',
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    labelStyle: TextStyle(color: Colors.grey[400]),
+                    prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[400]),
+                    filled: true,
+                    fillColor: const Color(0xFF1E1E24),
                      suffixIcon: IconButton(
                       icon: Icon(
                         _isConfirmPasswordVisible
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
+                        color: Colors.grey[400],
                       ),
                       onPressed: () {
                         setState(() {
@@ -268,11 +290,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       },
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
                     ),
                      enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.05)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -293,12 +320,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                    style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledBackgroundColor: Colors.grey.shade800,
+                    disabledForegroundColor: Colors.grey.shade500,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    elevation: 2,
+                    elevation: 0,
                   ),
                   child: _isLoading
                       ? const SizedBox(
@@ -324,7 +352,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   children: [
                     Text(
                       "Already have an account? ",
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: Colors.grey[400]),
                     ),
                     GestureDetector(
                       onTap: () {

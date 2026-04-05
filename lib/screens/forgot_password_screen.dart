@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart' as auth_prov;
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -20,9 +21,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       });
 
       try {
-        await FirebaseAuth.instance.sendPasswordResetEmail(
-          email: _emailController.text.trim(),
-        );
+        final authProvider = Provider.of<auth_prov.AuthProvider>(context, listen: false);
+        await authProvider.resetPassword(_emailController.text.trim());
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -33,11 +33,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           );
           Navigator.pop(context); // Go back to login
         }
-      } on FirebaseAuthException catch (e) {
+      } catch (e) {
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.message ?? 'An error occurred'),
+              content: Text(e.toString()),
               backgroundColor: Colors.red,
             ),
           );
